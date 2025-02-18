@@ -1,13 +1,19 @@
 import streamlit as st
 import openai
-from typing import Optional
+from typing import Optional, Tuple
+
+# Load API key from Streamlit secrets
+try:
+    openai_api_key = st.secrets["openai"]["api_key"]
+except KeyError:
+    openai_api_key = None
 
 
 class CodeConverter:
     def __init__(self, api_key: str):
-        openai.api_key = api_key
+        self.client = openai.Client(api_key=api_key)
 
-    def convert_r_to_python(self, r_code: str) -> tuple[str, Optional[str]]:
+    def convert_r_to_python(self, r_code: str) -> Tuple[Optional[str], Optional[str]]:
         try:
             prompt = f"""Convert the following R code to equivalent Python code. 
             Include necessary import statements (like pandas, numpy, matplotlib) and explain any key differences.
@@ -18,7 +24,7 @@ class CodeConverter:
             Provide only the Python equivalent code with appropriate library usage. No explanations needed.
             """
 
-            response = openai.ChatCompletion.create(
+            response = self.client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {
@@ -43,11 +49,8 @@ st.set_page_config(page_title="R to Python Converter", layout="wide")
 st.title("R to Python Code Converter")
 st.markdown("""
 This tool converts R code to Python code using OpenAI's GPT model.
-Enter your OpenAI API key and R code to get started.
+Enter your R code to get started.
 """)
-
-# API Key input
-api_key = st.text_input("Enter your OpenAI API key", type="password")
 
 # Create two columns
 left_col, right_col = st.columns(2)
@@ -64,13 +67,13 @@ with right_col:
 
 # Convert button
 if st.button("Convert", key="convert"):
-    if not api_key:
-        st.error("Please enter your OpenAI API key")
-    elif not r_code:
-        st.warning("Please enter some R code")
+    if not openai_api_key:
+        st.error("OpenAI API key is missing. Please add it to your Streamlit secrets.")
+    elif not r_code.strip():
+        st.warning("Please enter some R code.")
     else:
         with st.spinner("Converting..."):
-            converter = CodeConverter(api_key)
+            converter = CodeConverter(openai_api_key)
             python_code, error = converter.convert_r_to_python(r_code)
 
             if error:
@@ -79,48 +82,39 @@ if st.button("Convert", key="convert"):
                 with right_col:
                     st.code(python_code, language="python")
 
-                    # Add copy button
-                    if st.button("Copy Python Code"):
-                        st.write("Code copied to clipboard!")
-                        st.text_area("", value=python_code, height=0, key="copy_area")
-                        st.code(python_code, language="python")
+                    # Copy button
+                    if st.button("Copy Python Code", key="copy"):
+                        st.session_state["copy_code"] = python_code
+                        st.success("Code copied! You can manually copy from below:")
+                        st.text_area("", value=python_code, height=150, key="copy_area")
 
-# Example R code in sidebar
-st.sidebar.header("Example R Code")
-example_r_code = """# Read and process data
-data <- read.csv("data.csv")
-head(data)
 
-# Data manipulation
-filtered_data <- data[data$age > 25, ]
-mean_age <- mean(data$age, na.rm=TRUE)
+# # Example R code in sidebar
+# st.sidebar.header("Example R Code")
+# example_r_code = """# Read and process data
+# data <- read.csv("data.csv")
+# head(data)
 
-# Create visualization
-library(ggplot2)
-ggplot(data, aes(x=age, y=salary)) + 
-  geom_point() +
-  geom_smooth(method="lm") +
-  labs(title="Age vs Salary")
+# # Data manipulation
+# filtered_data <- data[data$age > 25, ]
+# mean_age <- mean(data$age, na.rm=TRUE)
+
+# # Create visualization
+# library(ggplot2)
+# ggplot(data, aes(x=age, y=salary)) +
+#   geom_point() +
+#   geom_smooth(method="lm") +
+#   labs(title="Age vs Salary")
 """
 
-if st.sidebar.button("Try Example"):
-    st.session_state.r_input = example_r_code
+# if st.sidebar.button("Try Example"):
+#     st.session_state.r_input = example_r_code
 
-# Add helpful information
-st.sidebar.markdown("""
-### Common R to Python Equivalents:
-- `read.csv()` → `pd.read_csv()`
-- `head()` → `df.head()`
-- `library(ggplot2)` → `import seaborn as sns`
-- `%>%` → `.pipe()`
-""")
-
-
-# Requirements and setup instructions
-st.sidebar.markdown("""
-### Setup Instructions:
-1. Get an OpenAI API key from [OpenAI](https://platform.openai.com)
-2. Install requirements:
-```bash
-pip install streamlit openai
-                    """)
+# # Add helpful information
+# st.sidebar.markdown("""
+# ### Common R to Python Equivalents:
+# - `read.csv()` → `pd.read_csv()`
+# - `head()` → `df.head()`
+# - `library(ggplot2)` → `import seaborn as sns`
+# - `%>%` → `.pipe()`
+# """)

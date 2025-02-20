@@ -1,6 +1,9 @@
 ## AI Powered Code Converter from R to Python 🔁
 
-An AI-powered application that leverages OpenAI's GPT-4o-mini to automatically convert R code to equivalent Python code. This tool helps any R developer to get the equivalent Python code for the R code inputted. Instead of giving custom instructions to chatgpt everytime we want to convert our code, this tool lets us to easily insert the R code and get the Python implementation at the click of a button. to set up just include the API key in the secrets.toml in the .streamlit folder.
+An AI-powered application that leverages OpenAI's GPT-4o-mini to automatically convert R code to equivalent Python code. This tool helps any R developer to get the equivalent Python code for the R code inputted. 
+
+Instead of giving custom instructions to chatgpt everytime we want to convert our code, this tool lets us to easily insert the R code and get the Python implementation at the click of a button. 
+To set up just include the API key in the secrets.toml in the .streamlit folder.
 
 Tech Stack used:
 

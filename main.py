@@ -42,7 +42,7 @@ class CodeConverter:
             return None, str(e)
 
 
-# Streamlit UI
+################################################### Streamlit UI #########################################################
 st.set_page_config(page_title="R to Python Converter", layout="wide", page_icon="🤖")
 
 
@@ -85,4 +85,4 @@ if st.button("Convert", key="convert"):
                     if st.button("Copy Python Code", key="copy"):
                         st.session_state["copy_code"] = python_code
                         st.success("Code copied! You can manually copy from below:")
-                        st.text_area("", value=python_code, height=150, key="copy_area")
+                        st.text_area("", value=python_code, height=250, key="copy_area")

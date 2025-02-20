@@ -1,3 +1,4 @@
+# this is to test if the API to be working
 from openai import OpenAI
 
 client = OpenAI(api_key="")
